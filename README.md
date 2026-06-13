@@ -1,5 +1,7 @@
 # Papereading Master Beta
 
+[简体中文](README.md) | [English](README.en.md)
+
 Papereading Master Beta 是一个本地优先的论文、代码与科研实验辅助 Agent。它不是聊天壳：系统会规划任务、调用检索与分析工具、验证引用和论文-代码对应关系，并在证据不足时自动改写查询重试。
 
 > 当前版本：`0.2.0-beta.1`。项目处于 Beta 阶段，实验建议和代码对应检查仍需研究者最终确认。
