@@ -1,5 +1,5 @@
 [project]
-name = "paper-agent"
+name = "papereading-master"
 version = "0.2.0b1"
 description = "A local-first agentic workspace for reading papers, inspecting code, and planning research experiments."
 readme = "README.md"
@@ -30,8 +30,8 @@ vision = []
 
 [project.scripts]
 finals-agent = "finals_agent.app.cli:main"
-paper-agent = "finals_agent.app.cli:main"
-paper-agent-desktop = "finals_agent.app.desktop:main"
+papereading-master = "finals_agent.app.cli:main"
+papereading-master-desktop = "finals_agent.app.desktop:main"
 
 [build-system]
 requires = ["setuptools>=68"]

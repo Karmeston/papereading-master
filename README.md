@@ -64,12 +64,6 @@ python -m venv .venv
 
 Embedding 默认关闭：
 
-```text
-EMBEDDING_PROVIDER=disabled
-```
-
-当前版本不会把 embedding 接到 DeepSeek。后续可独立接入 Qwen API；如需本地 embedding，可安装 `.[embeddings]` 并设置 `EMBEDDING_PROVIDER=local`。
-
 ## 常用 CLI
 
 ```powershell
@@ -97,43 +91,6 @@ paper-agent chat "总结方法与实验结论，并保留引用"
 - `data/`、`.env`、构建产物和调试截图已被 `.gitignore` 排除。
 
 论文-代码对应报告会明确标注代码扫描覆盖范围。只有独立验证通过的双方证据才会被标记为已验证；扫描不完整时，“未找到实现”只会判定为不确定，不会被当作缺失事实。
-
-## 测试
-
-```powershell
-python -m pytest -q
-```
-
-当前发布基线：`241 passed`。
-
-## 构建 Windows 安装包
-
-需要 Python 3.10+ 和 [Inno Setup 6](https://jrsoftware.org/isinfo.php)。
-
-```powershell
-.\packaging\bootstrap_windows.ps1
-```
-
-脚本会创建独立的 `.packaging-venv`，避免把开发环境中的 Torch、CUDA 等无关依赖打进程序。输出文件：
-
-```text
-release\Papereading-Master-Beta-Setup-0.2.0-beta.1.exe
-release\SHA256SUMS.txt
-```
-
-只构建便携目录：
-
-```powershell
-.\packaging\build_windows.ps1 -PythonExe .\.packaging-venv\Scripts\python.exe -SkipInstaller
-```
-
-## GitHub 发布
-
-1. 确认 `python -m pytest -q` 全部通过。
-2. 本机安装并启动 `release` 中的安装包。
-3. 创建标签，例如 `v0.2.0-beta.1`。
-4. 推送标签后，GitHub Actions 会构建 Windows 安装包并上传 workflow artifact。
-5. 将安装包和 `SHA256SUMS.txt` 附加到 GitHub Release。
 
 ## License
 
