@@ -1,0 +1,6 @@
+langchain>=1.0
+langchain-openai>=1.0
+pypdf>=5.0
+pymupdf>=1.24
+python-dotenv>=1.0
+jieba>=0.42.1

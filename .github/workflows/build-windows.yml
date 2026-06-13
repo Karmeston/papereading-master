@@ -1,0 +1,27 @@
+name: Build Windows Installer
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[desktop]"
+      - run: choco install innosetup --no-progress -y
+      - shell: powershell
+        run: .\packaging\build_windows.ps1 -PythonExe python
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Papereading-Master-Beta-Windows
+          path: |
+            release/*.exe
+            release/SHA256SUMS.txt
