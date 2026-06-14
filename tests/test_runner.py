@@ -71,7 +71,8 @@ def test_run_agent_uses_request_message_protocol(monkeypatch):
             question="hello",
             course_context=CourseContext(course="calculus"),
             conversation_id="conv-1",
-        )
+        ),
+        model=SimpleNamespace(),
     )
 
     assert fake_agent.payload == {"messages": [{"role": "user", "content": "hello"}]}

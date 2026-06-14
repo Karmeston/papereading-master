@@ -199,6 +199,7 @@ def test_orchestrator_builds_agent_with_plan_selected_tools():
     from finals_agent.agent.orchestrator import TaskOrchestrator
 
     result = TaskOrchestrator(
+        model=SimpleNamespace(),
         agent_factory=agent_factory,
         tool_registry=registry,
         retriever=EmptyRetriever(),
