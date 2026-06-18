@@ -12,15 +12,22 @@ APP_HTML = r"""<!doctype html>
   <style>
     :root {
       color-scheme: light;
-      --canvas: #f3f5f6;
-      --surface: #ffffff;
-      --surface-alt: #f8f9fa;
-      --line: #dde2e5;
-      --line-strong: #c9d0d4;
+      --canvas: #e7e2d6;
+      --surface: #fffdf7;
+      --surface-alt: #f6f3ea;
+      --line: #ddd5c6;
+      --line-strong: #c7bca8;
       --text: #172026;
-      --muted: #67737b;
-      --accent: #176b67;
-      --accent-soft: #e3f0ee;
+      --muted: #706a5e;
+      --accent: #5b331f;
+      --accent-hover: #432416;
+      --accent-soft: #eadfd2;
+      --wood-dark: #2b1710;
+      --wood-mid: #5b3421;
+      --wood-light: #8a5b36;
+      --paper: #fffaf0;
+      --paper-deep: #efe4d1;
+      --ink-soft: #445159;
       --blue: #3b5f8a;
       --warning: #a86416;
       --danger: #a43d3d;
@@ -34,7 +41,12 @@ APP_HTML = r"""<!doctype html>
     body {
       margin: 0;
       overflow: hidden;
-      background: var(--canvas);
+      background:
+        radial-gradient(ellipse at 22% 12%, rgba(255, 210, 154, .12), transparent 34%),
+        radial-gradient(ellipse at 68% 22%, rgba(20, 8, 3, .32), transparent 46%),
+        repeating-radial-gradient(ellipse at 18% 50%, rgba(255, 210, 145, .08) 0 2px, transparent 3px 14px),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 2px, transparent 2px 24px),
+        repeating-linear-gradient(90deg, #2b1710 0 84px, #361d12 84px 88px, #4b2b1b 88px 174px, #2f190f 174px 178px);
       color: var(--text);
       font-size: 14px;
       letter-spacing: 0;
@@ -48,9 +60,15 @@ APP_HTML = r"""<!doctype html>
       align-items: center;
       gap: 12px;
       padding: 0 14px;
-      background: #20282d;
+      background:
+        radial-gradient(ellipse at 18% 50%, rgba(255, 202, 132, .14), transparent 38%),
+        repeating-radial-gradient(ellipse at 30% 50%, rgba(255, 222, 168, .10) 0 2px, transparent 3px 13px),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 18px),
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.24)),
+        var(--wood-dark);
       color: #fff;
-      border-bottom: 1px solid #151b1f;
+      border-bottom: 1px solid #190b06;
+      box-shadow: 0 2px 12px rgba(35, 25, 18, .28);
     }
     .brand {
       width: 270px;
@@ -66,7 +84,7 @@ APP_HTML = r"""<!doctype html>
       display: grid;
       place-items: center;
       background: #dcebe8;
-      color: #184b49;
+      color: #4a2b1c;
       border-radius: 6px;
       font-family: Georgia, serif;
       font-size: 17px;
@@ -92,35 +110,42 @@ APP_HTML = r"""<!doctype html>
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #58b981;
+      background: #b98a55;
     }
     .top-command {
       min-height: 32px;
       padding: 0 11px;
-      border: 1px solid #4a565d;
+      border: 1px solid rgba(207, 166, 118, .24);
       border-radius: 6px;
-      background: #2b353b;
-      color: #f3f6f7;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 11px),
+        #3b2519;
+      color: #f5eee7;
       font-size: 12px;
       white-space: nowrap;
     }
-    .top-command:hover { border-color: #708087; background: #354148; }
+    .top-command:hover { border-color: rgba(230, 190, 140, .46); background: #4a2b1c; }
     .workspace-switch {
       display: inline-flex;
       padding: 3px;
-      border-radius: 6px;
-      background: #151c20;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      background: rgba(12, 10, 8, .34);
     }
     .workspace-tab {
       min-height: 30px;
       padding: 0 11px;
       border: 0;
-      border-radius: 4px;
+      border-radius: 999px;
       background: transparent;
       color: #aeb9be;
       font-size: 12px;
     }
-    .workspace-tab.active { background: #3a474e; color: #fff; }
+    .workspace-tab.active {
+      background: #e8ded0;
+      color: #2c2822;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.45), 0 1px 5px rgba(0,0,0,.2);
+    }
     .icon-btn {
       width: 32px;
       height: 32px;
@@ -136,21 +161,103 @@ APP_HTML = r"""<!doctype html>
       line-height: 1;
     }
     .icon-btn:hover { background: rgba(255,255,255,.1); }
-    .shell {
+    .book-stage {
+      position: relative;
       height: calc(100vh - var(--topbar));
+      padding: 14px 18px 18px;
+      perspective: 1800px;
+      overflow: hidden;
+    }
+    .book-stage::before {
+      content: "";
+      position: absolute;
+      inset: 8px 12px 12px;
+      pointer-events: none;
+      border-radius: 16px;
+      background:
+        radial-gradient(ellipse at 18% 42%, rgba(255, 207, 142, .16), transparent 42%),
+        radial-gradient(ellipse at 72% 56%, rgba(28, 10, 4, .24), transparent 44%),
+        repeating-radial-gradient(ellipse at 36% 50%, rgba(255, 220, 164, .10) 0 2px, transparent 3px 16px),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 1px, transparent 1px 20px),
+        linear-gradient(90deg, rgba(30, 15, 8, .55), rgba(72, 41, 24, .34) 42px, rgba(79, 48, 30, .18)),
+        #422516;
+      box-shadow: 0 18px 46px rgba(46, 35, 26, .25);
+    }
+    .book-page {
+      position: absolute;
+      inset: 14px 18px 18px;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid rgba(119, 101, 73, .35);
+      border-radius: 12px;
+      background:
+        linear-gradient(90deg, rgba(85,61,42,.18), rgba(255,255,255,0) 34px),
+        repeating-linear-gradient(0deg, rgba(72,55,38,.027) 0 1px, transparent 1px 6px),
+        repeating-linear-gradient(90deg, rgba(72,55,38,.018) 0 1px, transparent 1px 9px),
+        var(--paper);
+      box-shadow:
+        inset 28px 0 34px rgba(95, 66, 40, .10),
+        inset -1px 0 0 rgba(255,255,255,.7),
+        0 18px 45px rgba(45, 36, 28, .24);
+      transform-origin: left center;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+    }
+    .book-page::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(57, 40, 26, .18), transparent 38px),
+        linear-gradient(105deg, transparent 68%, rgba(255,255,255,.24) 78%, transparent 100%);
+      mix-blend-mode: multiply;
+      opacity: .72;
+    }
+    .book-page > * {
+      position: relative;
+      z-index: 1;
+    }
+    .book-page.page-enter { animation: pageEnter .46s cubic-bezier(.2,.72,.22,1) both; }
+    .book-page.page-exit {
+      z-index: 5;
+      pointer-events: none;
+      animation: pageExit .42s cubic-bezier(.55,.02,.32,1) both;
+    }
+    @keyframes pageEnter {
+      from { opacity: .38; transform: rotateY(-54deg) translateX(-20px) scale(.985); filter: brightness(.94); }
+      to { opacity: 1; transform: rotateY(0deg) translateX(0) scale(1); filter: brightness(1); }
+    }
+    @keyframes pageExit {
+      from { opacity: 1; transform: rotateY(0deg) translateX(0) scale(1); filter: brightness(1); }
+      to { opacity: .18; transform: rotateY(54deg) translateX(20px) scale(.985); filter: brightness(.9); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .book-page.page-enter, .book-page.page-exit { animation: none; }
+    }
+    .shell {
+      height: auto;
+      z-index: 2;
       display: grid;
-      grid-template-columns: 248px minmax(420px, 1fr) 270px;
+      grid-template-columns: minmax(204px, 248px) minmax(0, 1fr) 270px;
       min-width: 0;
     }
-    .shell.code-mode { grid-template-columns: 248px minmax(420px, 1fr) 280px; }
+    .shell.code-mode { grid-template-columns: minmax(204px, 248px) minmax(0, 1fr) 280px; }
     .shell.code-mode #inspector-artifacts { display: none; }
     .shell.code-mode .inspector-tabs { grid-template-columns: 1fr; }
     .shell.code-mode [data-inspector-panel="artifacts"] { display: none; }
     .library, .inspector, .workspace { min-width: 0; min-height: 0; }
+    .library { grid-column: 1; }
+    .workspace { grid-column: 2; }
+    .inspector { grid-column: 3; }
     .library {
       display: flex;
       flex-direction: column;
-      background: #eef1f2;
+      background:
+        linear-gradient(90deg, rgba(68, 48, 32, .08), transparent 34px),
+        #f0eadf;
       border-right: 1px solid var(--line);
     }
     .side-head {
@@ -210,7 +317,7 @@ APP_HTML = r"""<!doctype html>
       top: 0;
       z-index: 2;
       padding: 7px 12px 5px;
-      background: #edf0f1;
+      background: #eee7dc;
       color: var(--muted);
       font-size: 10px;
       font-weight: 700;
@@ -227,7 +334,7 @@ APP_HTML = r"""<!doctype html>
       color: var(--text);
       text-align: left;
     }
-    .doc:hover { background: #e4e8ea; }
+    .doc:hover { background: #e9e1d4; }
     .doc.active { background: var(--surface); border-left-color: var(--accent); }
     .doc-more {
       position: absolute;
@@ -242,7 +349,7 @@ APP_HTML = r"""<!doctype html>
       font-size: 18px;
       line-height: 1;
     }
-    .doc-entry:hover .doc-more, .doc-more.active { background: #d8dee1; color: var(--text); }
+    .doc-entry:hover .doc-more, .doc-more.active { background: #ddd3c4; color: var(--text); }
     .doc-menu {
       position: absolute;
       top: 36px;
@@ -297,10 +404,15 @@ APP_HTML = r"""<!doctype html>
     .workspace {
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
-      background: var(--canvas);
+      overflow: hidden;
+      background:
+        repeating-linear-gradient(0deg, rgba(80,62,42,.025) 0 1px, transparent 1px 7px),
+        var(--paper);
     }
     .document-head {
-      background: var(--surface);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.25)),
+        var(--surface);
       border-bottom: 1px solid var(--line);
     }
     .document-title-row {
@@ -346,10 +458,10 @@ APP_HTML = r"""<!doctype html>
     }
     .mode-tab:hover { color: var(--text); }
     .mode-tab.active { border-bottom-color: var(--accent); color: var(--accent); font-weight: 650; }
-    .work-area { min-height: 0; overflow: hidden; }
-    .view { display: none; height: 100%; min-height: 0; }
+    .work-area { min-width: 0; min-height: 0; overflow: hidden; }
+    .view { display: none; width: 100%; height: 100%; min-width: 0; min-height: 0; }
     .view.active { display: block; }
-    .source-view.active { display: grid; grid-template-rows: 44px minmax(0, 1fr); }
+    .source-view.active { display: grid; grid-template-rows: 44px minmax(0, 1fr); min-width: 0; }
     .source-view.active.no-toolbar { grid-template-rows: minmax(0, 1fr); }
     .source-toolbar {
       display: flex;
@@ -358,7 +470,9 @@ APP_HTML = r"""<!doctype html>
       gap: 7px;
       padding: 6px 12px;
       border-bottom: 1px solid var(--line);
-      background: var(--surface);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.2)),
+        var(--surface);
     }
     .source-toolbar .icon-btn { color: var(--text); border-color: var(--line); }
     .page-jump {
@@ -371,15 +485,23 @@ APP_HTML = r"""<!doctype html>
     }
     .page-total { min-width: 46px; color: var(--muted); font-size: 12px; }
     .pdf-reader {
+      width: 100%;
+      min-width: 0;
       height: 100%;
-      overflow: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+      contain: layout paint;
       padding: 20px 24px 60px;
-      background: #697176;
+      background:
+        radial-gradient(circle at 50% 0, rgba(255,255,255,.28), transparent 42%),
+        linear-gradient(90deg, rgba(61,45,32,.20), transparent 34px, transparent calc(100% - 28px), rgba(61,45,32,.12)),
+        #696159;
       scroll-behavior: smooth;
     }
     .pdf-page {
       position: relative;
-      width: min(920px, 100%);
+      width: min(920px, calc(100% - 2px));
+      max-width: 100%;
       margin: 0 auto 18px;
       background: #fff;
       box-shadow: 0 2px 9px rgba(0,0,0,.28);
@@ -410,7 +532,11 @@ APP_HTML = r"""<!doctype html>
       transform-origin: left top;
       user-select: text;
     }
-    .pdf-text-line::selection { background: rgba(59,95,138,.32); color: transparent; }
+    .pdf-text-layer::selection,
+    .pdf-text-line::selection {
+      background: rgba(91,51,31,.13);
+      color: transparent;
+    }
     .pdf-translation {
       position: absolute;
       z-index: 4;
@@ -632,8 +758,21 @@ APP_HTML = r"""<!doctype html>
       white-space: nowrap;
     }
     .btn:hover { background: var(--surface-alt); border-color: #aeb8bd; }
-    .btn.primary { border-color: var(--accent); background: var(--accent); color: #fff; }
-    .btn.primary:hover { background: #125b58; }
+    .btn.primary {
+      border-color: #482515;
+      background:
+        radial-gradient(ellipse at 18% 50%, rgba(255, 210, 145, .14), transparent 42%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 1px, transparent 1px 12px),
+        linear-gradient(180deg, #6b3d24, var(--accent));
+      color: #fff;
+      box-shadow: inset 0 1px 0 rgba(255, 226, 184, .18);
+    }
+    .btn.primary:hover {
+      background:
+        radial-gradient(ellipse at 18% 50%, rgba(255, 210, 145, .12), transparent 42%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 12px),
+        linear-gradient(180deg, #5a321f, var(--accent-hover));
+    }
     .btn.danger { color: var(--danger); }
     .output { max-width: 900px; margin: 0 auto; padding: 18px 22px 72px; }
     .output-title { margin: 0 0 14px; font-size: 16px; }
@@ -731,11 +870,15 @@ APP_HTML = r"""<!doctype html>
     }
     .send-btn { width: 38px; height: 38px; padding: 0; font-size: 17px; }
     .inspector {
+      position: relative;
+      z-index: 3;
       display: flex;
       flex-direction: column;
       overflow: auto;
       border-left: 1px solid var(--line);
-      background: var(--surface);
+      background:
+        repeating-linear-gradient(0deg, rgba(80,62,42,.023) 0 1px, transparent 1px 7px),
+        var(--surface);
     }
     .inspector-section { padding: 14px; border-bottom: 1px solid var(--line); }
     .section-label {
@@ -973,7 +1116,7 @@ APP_HTML = r"""<!doctype html>
     .crop-selection {
       position: absolute;
       inset: 0;
-      border: 2px solid #18a197;
+      border: 2px solid var(--accent);
       background: transparent;
       cursor: move;
       pointer-events: auto;
@@ -1026,11 +1169,14 @@ APP_HTML = r"""<!doctype html>
     }
     .settings-modal .modal-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
     .research-workspace {
-      height: calc(100vh - var(--topbar));
+      height: auto;
+      z-index: 2;
       display: grid;
       grid-template-rows: 58px minmax(0, 1fr);
       overflow: hidden;
-      background: var(--surface);
+      background:
+        repeating-linear-gradient(0deg, rgba(80,62,42,.025) 0 1px, transparent 1px 7px),
+        var(--paper);
     }
     .research-page-head {
       display: flex;
@@ -1038,7 +1184,9 @@ APP_HTML = r"""<!doctype html>
       gap: 12px;
       padding: 0 20px;
       border-bottom: 1px solid var(--line);
-      background: var(--surface);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.25)),
+        var(--surface);
     }
     .research-page-head h1 { flex: 1; margin: 0; font-size: 17px; }
     .research-page-head p { margin: 0; color: var(--muted); font-size: 12px; }
@@ -1049,7 +1197,9 @@ APP_HTML = r"""<!doctype html>
       padding: 12px;
       border: 1px dashed #aeb8bd;
       border-radius: 6px;
-      background: var(--surface-alt);
+      background:
+        linear-gradient(90deg, rgba(68, 48, 32, .08), transparent 34px),
+        var(--surface-alt);
       color: var(--muted);
       text-align: center;
       cursor: pointer;
@@ -1091,14 +1241,72 @@ APP_HTML = r"""<!doctype html>
       min-width: 0;
       min-height: 0;
       display: grid;
-      grid-template-columns: 320px minmax(0, 1fr);
+      grid-template-columns: 330px minmax(0, 1fr);
     }
     .research-setup {
       min-height: 0;
       overflow-y: auto;
-      padding: 16px;
+      padding: 16px 15px 24px;
       border-right: 1px solid var(--line);
-      background: var(--surface-alt);
+      background:
+        radial-gradient(ellipse at 18% 8%, rgba(255, 248, 226, .58), transparent 42%),
+        linear-gradient(90deg, rgba(86, 61, 39, .14), transparent 30px),
+        repeating-radial-gradient(ellipse at 28% 46%, rgba(132, 91, 50, .045) 0 2px, transparent 3px 18px),
+        repeating-linear-gradient(0deg, rgba(80,62,42,.032) 0 1px, transparent 1px 7px),
+        var(--paper-deep);
+    }
+    .research-setup .research-form {
+      gap: 14px;
+    }
+    .research-setup .settings-field {
+      color: #604f3f;
+      font-weight: 650;
+    }
+    .research-setup .field,
+    .research-setup select,
+    .research-setup textarea {
+      border-color: #cbbda8;
+      background: rgba(255, 250, 240, .86);
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+    }
+    .research-setup .field:focus,
+    .research-setup select:focus,
+    .research-setup textarea:focus {
+      outline: 2px solid rgba(91, 51, 31, .16);
+      border-color: var(--accent);
+    }
+    .research-setup .section-label {
+      margin: 2px 0 7px;
+      color: #5d4632;
+    }
+    .research-setup .research-form > div:not(.research-inline):not(.research-prompt-append),
+    .research-setup .research-form > label.settings-field {
+      padding: 11px;
+      border: 1px solid rgba(155, 130, 94, .36);
+      border-radius: 7px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,.16)),
+        rgba(255, 250, 240, .46);
+    }
+    .research-setup .research-inline {
+      padding: 9px;
+      border: 1px solid rgba(155, 130, 94, .3);
+      border-radius: 7px;
+      background: rgba(255, 250, 240, .38);
+    }
+    .research-setup .research-prompt-append {
+      padding: 11px;
+      border: 1px dashed rgba(133, 99, 65, .45);
+      border-radius: 7px;
+      background: rgba(255, 250, 240, .34);
+    }
+    .research-setup .settings-note {
+      padding: 10px 11px;
+      border-left: 3px solid rgba(91, 51, 31, .35);
+      border-radius: 0 6px 6px 0;
+      background: rgba(255, 250, 240, .42);
+      color: #6a5a4b;
     }
     .research-results { min-height: 0; overflow-y: auto; padding: 0 22px 40px; }
     .research-section { padding: 20px 0; border-bottom: 1px solid var(--line); }
@@ -1111,18 +1319,20 @@ APP_HTML = r"""<!doctype html>
       gap: 5px;
       max-height: 190px;
       overflow: auto;
-      padding: 6px 0;
+      padding: 4px 0 0;
     }
     .research-choice {
       display: grid;
       grid-template-columns: 18px minmax(0, 1fr);
       gap: 7px;
       align-items: start;
-      padding: 6px 4px;
+      padding: 7px 6px;
+      border-radius: 5px;
       color: #344047;
       font-size: 12px;
       line-height: 1.4;
     }
+    .research-choice:hover { background: rgba(91, 51, 31, .07); }
     .research-choice input { margin: 2px 0 0; accent-color: var(--accent); }
     .research-choice small { display: block; margin-top: 2px; color: var(--muted); }
     .research-candidates { display: grid; gap: 9px; }
@@ -1224,11 +1434,13 @@ APP_HTML = r"""<!doctype html>
       border: 1px solid var(--line-strong);
       border-radius: 6px;
       padding: 11px 12px;
-      background: #20282d;
-      color: #eef2f3;
-      font: 12px/1.65 Consolas, monospace;
+      background:
+        repeating-linear-gradient(0deg, rgba(80,62,42,.028) 0 1px, transparent 1px 7px),
+        rgba(255, 250, 240, .92);
+      color: #2d2822;
+      font: 12px/1.65 "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
     }
-    .research-discovery-prompt::placeholder { color: #98a5ac; }
+    .research-discovery-prompt::placeholder { color: #8a7b6b; }
     .research-prompt-append { display: grid; gap: 7px; }
     .research-prompt-append .field { min-height: 72px; resize: vertical; }
     .research-inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
@@ -1258,13 +1470,13 @@ APP_HTML = r"""<!doctype html>
       text-align: center;
       cursor: pointer;
     }
-    .file-picker:hover { border-color: var(--accent); background: #f2f8f7; }
+    .file-picker:hover { border-color: var(--accent); background: #f4ece0; }
     .file-picker strong { display: block; margin-bottom: 5px; color: var(--text); }
     .file-picker input { display: none; }
     .import-pickers { display: grid; grid-template-columns: 1fr; gap: 8px; }
     .import-pickers.code-mode { grid-template-columns: 1fr 1fr; }
     .import-pickers.code-mode .file-picker { min-height: 100px; }
-    .type-picker { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 3px; border-radius: 6px; background: #eef1f2; }
+    .type-picker { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 3px; border-radius: 6px; background: #ebe2d5; }
     .type-option { height: 34px; border: 0; border-radius: 4px; background: transparent; color: var(--muted); }
     .type-option.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(25,35,40,.12); font-weight: 650; }
     .toast {
@@ -1287,7 +1499,7 @@ APP_HTML = r"""<!doctype html>
     .toast.error { background: #8e3535; }
     .mobile-only { display: none; }
     @media (max-width: 1120px) {
-      .shell { grid-template-columns: 230px minmax(380px, 1fr) 280px; }
+      .shell { grid-template-columns: minmax(190px, 230px) minmax(0, 1fr) 260px; }
       .brand { width: 214px; }
     }
     @media (max-width: 900px) {
@@ -1352,7 +1564,8 @@ APP_HTML = r"""<!doctype html>
     <button class="icon-btn mobile-only" id="inspectorToggle" title="阅读工具">▤</button>
   </header>
 
-  <div class="shell" id="appShell">
+  <div class="book-stage" id="bookStage" aria-live="polite">
+  <div class="book-page shell" id="appShell" data-workspace-page="reading">
     <aside class="library" id="library">
       <div class="side-head">
         <strong>资料库</strong>
@@ -1563,7 +1776,7 @@ APP_HTML = r"""<!doctype html>
       <div class="modal-actions"><button class="btn" id="cancelResearchTask">取消</button><button class="btn primary" id="confirmResearchTask">创建任务</button></div>
     </div>
   </div>
-  <section class="research-workspace" id="researchWorkspace" hidden>
+  <section class="book-page research-workspace" id="researchWorkspace" data-workspace-page="research" hidden>
       <div class="research-page-head">
         <h1 id="researchTitle">科研辅助</h1>
         <p>从论文理解到可执行实验，再根据结果继续、调整或中止</p>
@@ -1687,6 +1900,7 @@ APP_HTML = r"""<!doctype html>
         </main>
       </div>
   </section>
+  </div>
   <div class="modal-backdrop" id="settingsModal">
     <div class="modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <div class="modal-head"><h2 id="settingsTitle">模型 API 设置</h2><button class="icon-btn" id="closeSettings" title="关闭">×</button></div>
@@ -1784,6 +1998,7 @@ APP_HTML = r"""<!doctype html>
       researchExperiment: null,
       researchAttachments: [],
       researchSaveTimer: null,
+      workspaceTransitionTimer: null,
       activeLongTask: null
     };
     const $ = id => document.getElementById(id);
@@ -4219,9 +4434,21 @@ APP_HTML = r"""<!doctype html>
       applyResearchTask(null);
     };
     const setWorkspace = workspace => {
+      if (workspace === state.workspace && !$('appShell').classList.contains('page-exit')) return;
+      const previous = state.workspace;
+      const fromPage = previous === 'research' ? $('researchWorkspace') : $('appShell');
+      const toPage = workspace === 'research' ? $('researchWorkspace') : $('appShell');
+      clearTimeout(state.workspaceTransitionTimer);
+      document.querySelectorAll('.book-page').forEach(page => page.classList.remove('page-enter', 'page-exit'));
       state.workspace = workspace;
-      $('appShell').hidden = workspace !== 'reading';
-      $('researchWorkspace').hidden = workspace !== 'research';
+      if (fromPage && fromPage !== toPage && !fromPage.hidden) fromPage.classList.add('page-exit');
+      toPage.hidden = false;
+      toPage.classList.add('page-enter');
+      state.workspaceTransitionTimer = setTimeout(() => {
+        $('appShell').hidden = workspace !== 'reading';
+        $('researchWorkspace').hidden = workspace !== 'research';
+        document.querySelectorAll('.book-page').forEach(page => page.classList.remove('page-enter', 'page-exit'));
+      }, 470);
       $('openReading').classList.toggle('active', workspace === 'reading');
       $('openResearch').classList.toggle('active', workspace === 'research');
       $('topTitle').textContent = workspace === 'research'

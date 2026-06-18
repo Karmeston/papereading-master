@@ -33,7 +33,7 @@ class FakeExternalSearch:
             ExternalPaper(
                 title="Related Retrieval Study",
                 authors=("A. Researcher",),
-                summary="A retrieval method evaluated on two public benchmarks.",
+                summary="A retrieval method that reduces retrieval latency on two public benchmarks.",
                 url="https://arxiv.org/abs/2601.00001",
                 published="2026-01-01",
                 categories=("cs.CL",),
@@ -136,6 +136,8 @@ def test_research_assistant_discovers_and_persists_candidates(tmp_path: Path):
     assert task["code_ids"] == [code.id]
     assert task["related_candidates"][0]["title"] == "Related Retrieval Study"
     assert task["related_candidates"][0]["brief_summary"]
+    assert task["related_candidates"][0]["match_score"] >= 2
+    assert "retrieval" in task["related_candidates"][0]["matched_terms"]
 
 
 def test_research_assistant_excludes_selected_local_paper(tmp_path: Path):
@@ -172,6 +174,41 @@ def test_research_assistant_excludes_selected_local_paper(tmp_path: Path):
     assert result["candidates"][0]["brief_summary"].startswith(
         "This work reduces retrieval latency."
     )
+
+
+def test_research_assistant_does_not_pad_low_relevance_candidates(tmp_path: Path):
+    assistant, _model, _store, paper, _code = _assistant(tmp_path, [])
+
+    class MixedRelevanceSearch:
+        def search(self, query: str, limit: int = 5):
+            return (
+                ExternalPaper(
+                    title="Retrieval Latency Optimization",
+                    authors=("Relevant Author",),
+                    summary="Reduces retrieval latency with a lightweight ranker.",
+                    url="https://arxiv.org/abs/relevant",
+                    published="2026-02-01",
+                ),
+                ExternalPaper(
+                    title="General Language Model Survey",
+                    authors=("Distant Author",),
+                    summary="Surveys language model applications across many domains.",
+                    url="https://arxiv.org/abs/distant",
+                    published="2026-03-01",
+                ),
+            )
+
+    assistant.external_search = MixedRelevanceSearch()
+    assistant.model = None
+
+    result = assistant.discover(
+        direction="retrieval latency",
+        paper_ids=[paper.id],
+        limit=5,
+    )
+
+    assert [item["title"] for item in result["candidates"]] == ["Retrieval Latency Optimization"]
+    assert result["filtered_count"] == 1
 
 
 def test_research_task_name_and_material_selection_are_persisted(tmp_path: Path):

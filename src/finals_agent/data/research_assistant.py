@@ -52,11 +52,11 @@ class ResearchAssistant:
         queries = self._discovery_queries(normalized_direction, papers)
         local_titles = self._local_paper_titles(papers)
         related = []
-        fallback_related = []
         failures = []
         seen = set()
         safe_limit = max(1, min(limit, 12))
-        search_limit = min(20, safe_limit + len(local_titles) + 3)
+        search_limit = min(24, max(safe_limit * 3, safe_limit + len(local_titles) + 3))
+        filtered_count = 0
         for query in queries:
             _check_cancel(cancel_check)
             try:
@@ -64,7 +64,7 @@ class ResearchAssistant:
             except ExternalSearchError as exc:
                 failures.append(str(exc))
                 continue
-            minimum_overlap = 2 if len(_search_terms(query)) >= 3 else 1
+            minimum_overlap = _minimum_external_match_score(query)
             for source_index, item in enumerate(found):
                 key = (item.url or item.title).casefold()
                 if key in seen:
@@ -72,28 +72,30 @@ class ResearchAssistant:
                 seen.add(key)
                 if _normalized_title(item.title) in local_titles:
                     continue
-                score = _external_match_score(item, query)
-                fallback_related.append((score, source_index, item))
+                score, matched_terms = _external_match_details(item, query)
                 if score < minimum_overlap:
+                    filtered_count += 1
                     continue
-                related.append((score, source_index, item))
+                related.append((score, source_index, item, matched_terms))
             if len(related) >= search_limit:
                 break
-        if not related:
-            related = fallback_related
         if not related and failures:
             raise ExternalSearchError(
                 "相关论文检索失败。已尝试英文研究方向和本地论文标题，请稍后重试。"
             )
-        ranked_related = [
-            item
-            for _score, _source_index, item in sorted(
+        ranked_candidates = [
+            {
+                **_external_candidate(item),
+                "match_score": score,
+                "matched_terms": matched_terms[:10],
+            }
+            for score, _source_index, item, matched_terms in sorted(
                 related,
                 key=lambda entry: (-entry[0], entry[1]),
             )[:safe_limit]
         ]
         candidates = self._summarize_candidates(
-            [_external_candidate(item) for item in ranked_related]
+            ranked_candidates
         )
         _check_cancel(cancel_check)
         task = (
@@ -121,6 +123,7 @@ class ResearchAssistant:
             "local_papers": [item.to_dict() for item in papers],
             "code_documents": [item.to_dict() for item in codes],
             "candidates": candidates,
+            "filtered_count": filtered_count,
         }
 
     def update_task(
@@ -1287,7 +1290,12 @@ def _clean_search_query(value: str) -> str:
 
 
 def _search_terms(value: str) -> set[str]:
-    ignored = {"a", "an", "and", "for", "in", "of", "on", "the", "to", "with"}
+    ignored = {
+        "a", "an", "and", "for", "in", "of", "on", "the", "to", "with",
+        "paper", "papers", "study", "studies", "research", "method", "methods",
+        "approach", "approaches", "model", "models", "using", "based", "local",
+        "related", "work", "works", "via", "from", "into", "toward", "towards",
+    }
     return {
         word.casefold()
         for word in re.findall(r"[A-Za-z0-9][A-Za-z0-9+.#_-]*", value or "")
@@ -1296,8 +1304,22 @@ def _search_terms(value: str) -> set[str]:
 
 
 def _external_match_score(paper: ExternalPaper, query: str) -> int:
+    return _external_match_details(paper, query)[0]
+
+
+def _external_match_details(paper: ExternalPaper, query: str) -> tuple[int, list[str]]:
     haystack = " ".join((paper.title, paper.summary, " ".join(paper.categories))).casefold()
-    return sum(1 for term in _search_terms(query) if term in haystack)
+    matched = sorted(term for term in _search_terms(query) if term in haystack)
+    return len(matched), matched
+
+
+def _minimum_external_match_score(query: str) -> int:
+    term_count = len(_search_terms(query))
+    if term_count < 3:
+        return 1
+    if term_count >= 8:
+        return 3
+    return 2
 
 
 def _normalized_title(value: str) -> str:
